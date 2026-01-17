@@ -23,6 +23,7 @@ feof() → verifica fim do arquivo
 
 Exemplo simples salvando e lendo uma struct em arquivo binário:
 
+```c
 #include <stdio.h>
 
 struct Pessoa {
@@ -53,6 +54,8 @@ int main() {
 
     return 0;
 }
+
+```
 
 📝 Modos de Abertura de Arquivos
 Modo	Descrição
