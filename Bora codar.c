@@ -15,11 +15,13 @@ typedef struct{
 	char nome[100];
 	float valor;
 	int ano; 
+	int flag;
 }Carro;
 
 void next() {
 	while(getchar() != '\n');
 	getchar();
+	system("clear");
 }
 
 int menu(){
@@ -49,7 +51,7 @@ FILE* openfile(char* filename) {
 	return arq;
 }
 
- void setCarro(FILE* arq){
+void setCarro(FILE* arq){
 	 Carro c; 
 	 fseek(arq, 0, SEEK_END);
 	 
@@ -61,6 +63,7 @@ FILE* openfile(char* filename) {
 	 scanf("%f", &c.valor);
 	 printf("Digite o ano do carro: ");
 	 scanf("%d", &c.ano);
+	 c.flag = 1;
 	 c.modelo = (ftell(arq) / sizeof(Carro)) + 1;
 	
 	 if(fwrite(&c,sizeof(Carro), 1, arq)) {
@@ -74,33 +77,79 @@ void getCarro(FILE* arq){
 	
 	rewind(arq);
 	while(fread(&c, sizeof(Carro), 1, arq)) {
-		printf("\nmodelo: %d\n", c.modelo);
-		printf("Marca: %s\n", c.marca);
-		printf("Nome: %s\n", c.nome);
-		printf("Ano: %d\n", c.ano);
+		if(c.flag == 1) {
+			printf("\nmodelo: %d\n", c.modelo);
+			printf("Marca: %s\n", c.marca);
+			printf("Nome: %s\n", c.nome);
+			printf("Ano: %d\n", c.ano);
+		}
 	}
 }
 
-int getId(FILE* arq){
+int getId(){
 	int id;
-	printf("Digite o nome do modelo para exclusao: ");
+	printf("Digite o ID do carro para exclusao: ");
 	scanf("%d", &id);
 	return id;
 }
 
 void deleteCar(FILE* arq, int id){
 	Carro aux;
+	int encontrado = 0;
 	fseek(arq, 0, SEEK_SET);
 	
-	rewind(arq);
 	while(fread(&aux, sizeof(Carro), 1, arq))  {
-		if(aux.modelo == id) {
-			aux.modelo = -1;
+		if(aux.modelo == id && aux.flag == 1) {
+			aux.flag = 0;
 			fseek(arq, -sizeof(Carro), SEEK_CUR);
+			
+			if(fwrite(&aux, sizeof(Carro), 1, arq)) {
+				fflush(arq);
+				printf("\nexclusao realizada com sucesso!");
+				encontrado = 1;
+				break;
+			}
 		}	
 	}
+	if(!encontrado)
+		printf("Usuario inexistente!");
 	
-	//continuar amanha
+}
+
+void updateCar(FILE* arq, int cod) {
+	Carro c; 
+	int encontrado = 0;
+	
+	fseek(arq, 0, SEEK_SET);
+	while(fread(&c, sizeof(Carro), 1, arq)) {
+		if(c.modelo == cod && c.flag == 1) {
+			printf("\n====================Editar o carro por ID====================\n");
+			
+			printf("Nova marca: ");
+			scanf(" %[^\n]s", c.marca);
+			
+			printf("Novo nome: ");
+			scanf(" %[^\n]s", c.nome);
+			
+			printf("Novo preco de fabrica: ");
+			scanf("%f", &c.valor);
+			
+			printf("Novo ano: ");
+			scanf("%d", &c.ano);
+			
+			fseek(arq, -sizeof(Carro), SEEK_CUR);
+			fwrite(&c, sizeof(Carro), 1, arq);
+			fflush(arq);
+			
+			printf("\nCarro editado com sucesso!");
+			encontrado = 1;
+			break;
+		}
+	}
+	if(!encontrado) {
+		printf("\nCarro nao encontrtado! Tente novamente... ");
+		next();
+	}
 }
 
 int main() {
@@ -116,9 +165,10 @@ int main() {
 				getCarro(arq);
 				break;
 			case 3: 
-				deleteCar(arq, getCodigo();
+				deleteCar(arq, getId());
 				break;
 			case 4:
+				updateCar(arq, getId());
 				break;
 			case 0:
 				printf("\nPrograma encerrado!");
@@ -129,8 +179,7 @@ int main() {
 				next();
 		}
 	}while(1);
-	
-    //the destroyer of codes
+
 }
 
 
