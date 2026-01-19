@@ -88,7 +88,7 @@ void getCarro(FILE* arq){
 
 int getId(){
 	int id;
-	printf("Digite o ID do carro para exclusao: ");
+	printf("Digite o ID do carro: ");
 	scanf("%d", &id);
 	return id;
 }
@@ -111,8 +111,10 @@ void deleteCar(FILE* arq, int id){
 			}
 		}	
 	}
-	if(!encontrado)
-		printf("Usuario inexistente!");
+	if(!encontrado) {
+		printf("Usuario inexistente! Tente novamente... ");
+		next();
+	}
 	
 }
 
