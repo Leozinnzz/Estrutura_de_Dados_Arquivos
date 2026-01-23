@@ -156,7 +156,7 @@ void updateCar(FILE* arq, int cod) {
 
 int main() {
 	
-	FILE* arq = openfile("boraCodar.txt");
+	FILE* arq = openfile("boraCodar.dat");
 	
 	do {
 		switch(menu()) {
