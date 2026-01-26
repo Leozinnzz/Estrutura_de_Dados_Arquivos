@@ -21,7 +21,6 @@ typedef struct{
 	char marca[100];
 	char nome[100];
 	float valor;
-	int idPessoa;
 	int ativo;
 }Carro;
 
@@ -36,6 +35,13 @@ FILE* openfile(char* filename){
 	return arq;
 }
 
+
+void next() {
+	while(getchar() != '\n');
+	getchar();
+	system("clear");
+}
+
 int interface() {
 	printf("\n------------------------------PESSOA------------------------------\n");
 	printf("1 - Cadastrar pessoa\n");
@@ -45,8 +51,8 @@ int interface() {
 	printf("\n------------------------------CARRO------------------------------\n");
 	printf("5 - Cadastrar um carro\n");
 	printf("6 - Listar carros\n");
-	printf("7 - Excluir um carro\n");
-	printf("8 - Editar um carro\n");
+	printf("7 - Editar um carro\n");
+	printf("8 - Excluir um carro\n");
 	printf("0 - Sair\n");
 	
 	int opc;
@@ -70,6 +76,7 @@ void setPessoa(FILE* arq) {
 	if(fwrite(&p, sizeof(Pessoa), 1, arq)) {
 		fflush(arq);
 		printf("\nPessoa Registrada!\n");
+		next();
 	}
 }
 
@@ -101,7 +108,8 @@ void excluirPessoa(FILE* arq,int cod) {
 			if(fwrite(&p, sizeof(Pessoa), 1, arq)) {
 				fflush(arq);
 				encontrado = 1;
-				printf("exclusao realizada com sucesso!\n");
+				printf("exclusao realizada com sucesso! \n");
+				next();
 				break;
 			}
 		}
@@ -131,8 +139,8 @@ void editarPessoa(FILE* arq, int id) {
 			//sobrescrever
 			if(fwrite(&p, sizeof(Pessoa), 1, arq)) {
 				fflush(arq);
-				encontrado = 1;
-				printf("edicao realizada com sucesso!\n");
+				encontrado = printf("edicao realizada com sucesso! \n");
+				next();
 				break;
 			}
 		}
@@ -145,7 +153,7 @@ void editarPessoa(FILE* arq, int id) {
 void setCarro(FILE* arq){ 
 	Carro c; 
 	
-	fseek(arq, 0, SEEK_SET);
+	fseek(arq, 0, SEEK_END);
 	printf("Digite a marca do carro: ");
 	scanf(" %[^\n]", c.marca);
 	
@@ -155,9 +163,84 @@ void setCarro(FILE* arq){
 	printf("Digite o preco do carro: ");
 	scanf("%f", &c.valor);
 	
-	//terminar amanha
+	c.id = (ftell(arq) / sizeof(Carro)) + 1;
+	
+	if(fwrite(&c, sizeof(Carro), 1, arq)) {
+		fflush(arq);
+		printf("Carro registrado! ");
+		next();
+	}
+
 }
 
+void getCarro(FILE* arq) {
+	Carro c;
+	
+	fseek(arq, 0, SEEK_SET); 
+	while(fread(&c, sizeof(Carro), 1, arq)) 
+		if(c.ativo)
+			printf("\nID: %d\nMarca: %s\nNome: %s\nPreco: %.2f\n", c.id, c.marca, c.nome, c.valor);
+	
+}
+
+
+void editarCarro(FILE* arq, int id) {
+	Carro c;
+	int flag = 0;
+	
+	fseek(arq, 0, SEEK_SET);
+	while(fread(&c, sizeof(Carro), 1, arq)) {
+		if(c.id == id && c.ativo) {
+			
+			printf("Nova marca: ");
+			scanf(" %[^\n]", c.marca);
+			
+			printf("Novo nome: ");
+			scanf(" %[^\n]", c.nome);
+			
+			printf("Novo valor: ");
+			scanf("%f", &c.valor);
+			
+			//voltar cursor
+			fseek(arq, -sizeof(Carro), SEEK_CUR);
+			//escrever no arquivo
+			if(fwrite(&c, sizeof(Carro), 1, arq)) {
+				fflush(arq);
+				flag = 1; 
+				printf("Edicao realizada com sucesso! ");
+				next();
+				break;
+			}
+		}
+	}
+	if(!flag)
+		printf("/nCarro nao encontrado!");
+	
+}
+
+void excluirCarro(FILE* arq, int cod) {
+	Carro c;
+	int encontrado = 0;
+	
+	fseek(arq, 0, SEEK_SET);
+	while(fread(&c, sizeof(Carro), 1, arq)) {
+		if(c.id == cod && c.ativo) {
+			c.ativo = 0;
+			//voltar cursor
+			fseek(arq, -sizeof(Carro), SEEK_CUR);
+			//escrever no arquivo
+			if(fwrite(&c, sizeof(Carro), 1, arq)) {
+				fflush(arq);
+				encontrado = 1;
+				printf("Exclusao concluida com sucesso! ");
+				next();
+				break;
+			}
+		}
+	}
+	if(!encontrado) 
+		printf("\nCarro inexistente!");
+}
 
 int main() {
 	
@@ -179,14 +262,21 @@ int main() {
 			editarPessoa(arqP, getId());
 			break;
 		case 5:
+			setCarro(arqC);
 			break;
 		case 6:
+			getCarro(arqC);
 			break;
 		case 7:
+			editarCarro(arqC, getId());
 			break;
 		case 8:
+			excluirCarro(arqC, getId());
 			break;
 		case 0:
+			printf("Programa encerrado!");
+			fclose(arqP);
+			fclose(arqC);
 			return 0;
 		default:
 			printf("Digite uma opcao valida!");
