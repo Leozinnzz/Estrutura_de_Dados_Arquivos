@@ -31,6 +31,7 @@ FILE* openfile(char* filename) {
 
 int interface() {
 	printf("\n===============Menu==============\n");
+	printf("0- Sair\n");
 	printf("1- registrar\n");
 	printf("2- Listar pessoas\n");
 	printf("3- Editar pessoa\n");
@@ -55,6 +56,7 @@ void setPessoa(FILE* arq) {
 	printf("Digite a altura do individuo: ");
 	scanf("%f", &p.altura);
 	p.id = (ftell(arq) / sizeof(Pessoa)) + 1;
+	p.ativo = 1;
 	
 	if(fwrite(&p, sizeof(Pessoa), 1, arq))
 		fflush(arq);
@@ -67,7 +69,7 @@ void getPessoa(FILE* arq) {
 	
 	while(fread(&p, sizeof(Pessoa), 1, arq)) 
 		if(p.ativo)
-			printf("\nId: %d\nNome: %s\nIdade: %d\nAltura%.2f\n", p.id, p.nome, p.idade, p.altura);
+			printf("\nId: %d\nNome: %s\nIdade: %d\nAltura: %.2f\n", p.id, p.nome, p.idade, p.altura);
 }
 
 void editarPessoa(FILE* arq, int cod) {
@@ -107,22 +109,24 @@ int getId() {
 	printf("Digite o id do individuo: ");
 	scanf("%d", &id);
 	return id;
-}
+} 
 
 //ordenaçao em arquivos
 void ordenarPessoa(FILE* arq) {
 	fseek(arq, 0, SEEK_END);
-	int T = ftell(arq) / sizeof(Pessoa);
+	int T = ftell(arq) / sizeof(Pessoa); 
 	Pessoa lista[T];
-	fseek(arq, 0, SEEK_SET);
 	
-	fread(lista, T*sizeof(Pessoa), 1, arq);
+	fseek(arq, 0, SEEK_SET);
+	fread(lista, sizeof(Pessoa), T, arq);
+	
+	//bubble sort
 	Pessoa aux;
-	for(int i = 0; i < T; i++) {
-		for(int j = 0; j < T-i-1; j++) {
-			if(strcmp(lista[j].nome,lista[j+1].nome) > 0) {
+	for(int i = 0; i < T-1; i++) {
+		for(int j = 0 ;j < T-i-1; j++) {
+			if(strcmp(lista[j].nome, lista[j+1].nome) > 0) {
 				aux = lista[j];
-				lista[j] = lista[j+1];
+				lista[j] = lista[j+1]; 
 				lista[j+1] = aux;
 			}
 		}
@@ -130,7 +134,6 @@ void ordenarPessoa(FILE* arq) {
 	
 	fseek(arq, 0, SEEK_SET);
 	fwrite(lista, sizeof(Pessoa), T, arq);
-	fflush(arq);
 }
 
 int main() {
