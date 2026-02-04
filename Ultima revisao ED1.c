@@ -132,7 +132,7 @@ void pagarDespesa(FILE* arq) {
 			
 			fseek(arq, -sizeof(Lancamento), SEEK_CUR); 
 			if(fwrite(list, sizeof(Lancamento), 1, arq)) {
-				printf("Despesa paga\n");
+				printf("Despesa paga!\n");
 				fflush(arq);
 				encontrado = 1;
 				break;
